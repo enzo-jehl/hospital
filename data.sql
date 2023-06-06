@@ -44,7 +44,7 @@ VALUES
   (1, 'Aspirin', '500mg'),
   (2, 'Amoxicillin', '250mg'),
   (3, 'Ibuprofen', '200mg'),
-  (4, 'Sprite', '1kg')4
+  (4, 'Sprite', '1kg');
 
 INSERT INTO Department (Department_ID, Department_Name)
 VALUES
