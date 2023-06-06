@@ -16,7 +16,8 @@ create table patient(
 	gender char(1),
 	date_of_birth date,
 	contact_number varchar(40),
-	address varchar(40)
+	address varchar(40),
+	contacted_department varchar(40)
 	);
 	
 create table doctor(
@@ -31,7 +32,8 @@ create table nurse(
 	nurse_ID int primary key,
 	name varchar(40),
 	contact_number varchar(40),
-	email varchar(40)
+	email varchar(40),
+	number_of_assigned_patients int
 	);
 	
 create table department(
