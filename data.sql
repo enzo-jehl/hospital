@@ -8,7 +8,7 @@ VALUES
   (4, 'Wissame Ismael', 'M', '2004-08-29','1516484622', '233 Togo Street');
   
 
-INSERT INTO Doctor (Doctor_ID, Name, Specialty, Contact_Number, Email)
+INSERT INTO Doctor (Doctor_ID, Name, Speciality, Contact_Number, Email)
 VALUES
   (1, 'Dr. Sarah Adams', 'Cardiology', '5551234567', 'sarah.adams@example.com'),
   (2, 'Dr. Michael Davis', 'Pediatrics', '5559876543', 'michael.davis@example.com'),
