@@ -46,18 +46,18 @@ create table appointment(
 	appointment_ID int primary key,
 	appointment_date date,
 	appointment_time time,
-	appointment_status varchar(40)
+	appointment_status varchar(40),
 	patient_ID int,
 	doctor_ID int,
 	foreign key (patient_ID) references patient(patient_ID),
-	foreign key (doctor_ID) references patient(doctor_ID)
+	foreign key (doctor_ID) references doctor(doctor_ID)
 	);
 
 create table medical_record(
 	medical_record_ID int primary key,
 	admission_date date,
 	discharge_date date,
-	diagnosis varchar(40)
+	diagnosis varchar(40),
 	patient_ID int,
 	foreign key (patient_ID) references patient(patient_ID)
 	);
@@ -71,7 +71,7 @@ create table medication(
 create table patient_doctor(
 	patient_ID int,
 	doctor_ID int,
-	primary_key (patient_ID, doctor_ID),
+	primary key (patient_ID, doctor_ID),
 	foreign key (patient_ID) references patient(patient_ID),
 	foreign key (doctor_ID) references doctor(doctor_ID)
 	);
@@ -91,8 +91,6 @@ create table patient_medication(
 	foreign key (patient_ID) references patient(patient_ID),
 	foreign key (medication_ID) references medication(medication_ID)
 	);
-	
-
 
 
 	
