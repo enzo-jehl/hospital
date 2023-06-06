@@ -100,6 +100,8 @@ Gender
 Date of Birth
 Contact Number
 Address
+Contacted Department
+Nurse ID (Foreign Key)
 
 -------------
 Doctor
