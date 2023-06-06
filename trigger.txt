@@ -1,0 +1,10 @@
+trigger :
+	-Id pour docteur, nurse, patient, medication
+	-assignement automatic d'une nurse a un nouveaux patient
+	-assignement d'un docteur puis création d'un appointement
+	-docteur assigner departement
+	-create new medical record
+	-création d'une table non remplie pour le patient_médication
+	-création du dossier médical du patient
+	-lors de la suppretion d'un patien suprime aussi le médical record, les appointement, le patient médication et le patient_doctor qui lui sont reliée
+	-lors de la suprésion d'une nurse/doc réassignement automatic d'une nouvelle nurse/doc
