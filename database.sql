@@ -1,16 +1,13 @@
-
-
-drop table if exists patient;
-drop table if exists doctor;
-drop table if exists nurse;
-drop table if exists appointment;
-drop table if exists department;
-drop table if exists medicalRecord;
-drop table if exists medication;
-
 drop table if exists patient_doctor;
 drop table if exists patient_nurse;
 drop table if exists patient_medication;
+drop table if exists medical_record;
+drop table if exists nurse;
+drop table if exists appointment;
+drop table if exists department;
+drop table if exists medication;
+drop table if exists patient;
+drop table if exists doctor;
 
 
 create table patient(
