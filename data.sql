@@ -4,8 +4,8 @@ INSERT INTO Patient (Patient_ID, Name, Gender, Date_of_Birth, Contact_Number, Ad
 VALUES
   (1, 'Flavien Geoffray', 'M', '2003-10-03', '1234567890', '789 Maple Street'),
   (2, 'Alexiane Laroye', 'F', '2003-04-06', '9876543210', '567 Oakwood Avenue'),
-  (3, 'Enzo Jehl', 'Male', '2003-10-10', '5555555555', '456 Elmwood Drive'),
-  (4, 'Wissame Ismael', 'Male', '2004-08-29','1516484622', '233 Togo Street');
+  (3, 'Enzo Jehl', 'M', '2003-10-10', '5555555555', '456 Elmwood Drive'),
+  (4, 'Wissame Ismael', 'M', '2004-08-29','1516484622', '233 Togo Street');
   
 
 INSERT INTO Doctor (Doctor_ID, Name, Specialty, Contact_Number, Email)
