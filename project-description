@@ -16,6 +16,10 @@ Triggers are database objects that automatically execute in response to specific
 Each group member should propose and implement at least three triggers that capture important business rules or data integrity constraints in your project.
 Triggers can be used to enforce referential integrity, validate data, or perform additional actions when certain conditions are met.
 
+
+
+
+-------------------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------
 
 Hospital Management System:
@@ -87,69 +91,92 @@ It is a Many-to-One relationship because multiple appointments can be linked to 
 
 ---- PDM ----
 
+-------------
 Patient
-
+-------------
 Patient ID (Primary Key)
 Name
 Gender
 Date of Birth
 Contact Number
 Address
-Doctor
 
+-------------
+Doctor
+-------------
 Doctor ID (Primary Key)
 Name
 Specialty
 Contact Number
 Email
-Nurse
 
+-------------
+Nurse
+-------------
 Nurse ID (Primary Key)
 Name
 Contact Number
 Email
-Appointment
 
+-------------
+Appointment
+-------------
 Appointment ID (Primary Key)
 Patient ID (Foreign Key)
 Doctor ID (Foreign Key)
 Appointment Date
 Appointment Time
 Appointment Status
-Medical Record
 
+-------------
+Medical Record
+-------------
 Medical Record ID (Primary Key)
 Patient ID (Foreign Key)
 Admission Date
 Discharge Date
 Diagnosis
-Medication
 
+-------------
+Medication
+-------------
 Medication ID (Primary Key)
 Medication Name
 Medication Dosage
-Department
 
+-------------
+Department
+-------------
 Department ID (Primary Key)
 Department Name
-Patient_Doctor
 
+-------------
+Patient_Doctor
+-------------
 Patient ID (Foreign Key)
 Doctor ID (Foreign Key)
-Patient_Nurse
 
+-------------
+Patient_Nurse
+-------------
 Patient ID (Foreign Key)
 Nurse ID (Foreign Key)
-Doctor_Department
 
+-------------
+Doctor_Department
+-------------
 Doctor ID (Foreign Key)
 Department ID (Foreign Key)
-Patient_MedicalRecord
 
+-------------
+Patient_MedicalRecord
+-------------
 Patient ID (Foreign Key)
 Medical Record ID (Foreign Key)
-Patient_Medication
 
+-------------
+Patient_Medication
+-------------
 Patient ID (Foreign Key)
 Medication ID (Foreign Key)
 Prescription Date
