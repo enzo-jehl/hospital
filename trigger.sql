@@ -93,3 +93,24 @@ BEFORE INSERT ON medication
 FOR EACH ROW
 EXECUTE FUNCTION assign_id_functionMed();
 
+
+CREATE OR REPLACE FUNCTION assign_nurse_to_patient()
+RETURNS TRIGGER AS $$
+DECLARE
+    nurse_id INT;
+BEGIN
+    select min(nurse_id) from nurse where number_of_assigned_patients = (select min(number_of_assigned_patients) from nurse)
+
+    NEW.nurse_id := nurse_id;
+
+    -- Mise à jour du nombre de patients de l'infirmière
+    UPDATE nurse SET number_of_assigned_patients = number_of_assigned_patients + 1 WHERE id = nurse_id;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER assign_nurse_trigger
+BEFORE INSERT ON patient
+FOR EACH ROW
+EXECUTE FUNCTION assign_nurse_to_patient();
