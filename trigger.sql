@@ -3,11 +3,15 @@ trigger :
 	-assignement automatic d'une nurse a un nouveaux patient (fait)
 	-docteur assigner departement(fait)
 	-create new medical record(fait)
-	-création d'une table non remplie pour le patient_médication (a faire)
-	-lors de la suppretion d'un patien suprime aussi le médical record, les appointement, le patient médication et le patient_doctor qui lui sont reliée
-	-lors de la suprésion d'une nurse/doc réassignement automatic d'une nouvelle nurse/doc
-	-assignement d'un docteur puis création d'un appointement 
+	-création d'une table non remplie pour le patient_médication (fait)
+	-création d'un trigger pour assigner l'id d'un médicament dans le médication id quand un nom est rentrée(fait)
+	-lors de la suppretion d'un patien suprime aussi le médical record, les appointement, le patient médication et le patient_doctor qui lui sont reliée va aussi baisser de 1 le ombre de patient de la nurse a l'aquelle le patient est assigner (fait)
+	-lors de la suprésion d'une nurse réassignement automatic d'une nouvelle nurse(fait)
+	-lors de la suprésion d'un docteur va suprimée ses appointement et ses lien avec les patient
 	
+	
+--trigger for the ID of patient
+
 CREATE OR REPLACE FUNCTION assign_id_functionPa()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -28,6 +32,10 @@ BEFORE INSERT ON patient
 FOR EACH ROW
 EXECUTE FUNCTION assign_id_functionPa();
 
+
+
+
+--trigger for the ID of doctor
 
 CREATE OR REPLACE FUNCTION assign_id_functionDoc()
 RETURNS TRIGGER AS $$
@@ -50,6 +58,10 @@ FOR EACH ROW
 EXECUTE FUNCTION assign_id_functionDoc();
 
 
+
+
+--trigger for the ID of nurse
+
 CREATE OR REPLACE FUNCTION assign_id_functionNu()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -70,6 +82,10 @@ BEFORE INSERT ON nurse
 FOR EACH ROW
 EXECUTE FUNCTION assign_id_functionNu();
 
+
+
+
+--trigger for the ID of medication
 
 CREATE OR REPLACE FUNCTION assign_id_functionMed()
 RETURNS TRIGGER AS $$
@@ -92,6 +108,10 @@ FOR EACH ROW
 EXECUTE FUNCTION assign_id_functionMed();
 
 
+
+
+--trigger to assigne a patient to the nurse with the less number a patient
+
 CREATE OR REPLACE FUNCTION assign_nurse_to_patient()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -113,6 +133,10 @@ FOR EACH ROW
 EXECUTE FUNCTION assign_nurse_to_patient();
 
 
+
+
+--trigger to assigne a doctor to his departement 
+
 CREATE OR REPLACE FUNCTION assign_doctor_to_department()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -128,6 +152,10 @@ BEFORE INSERT ON doctor
 FOR EACH ROW
 EXECUTE FUNCTION assign_doctor_to_department();
 
+
+
+
+--trigger to create the medical record of a patient
 
 CREATE OR REPLACE FUNCTION create_medical_record()
 RETURNS TRIGGER AS $$
@@ -149,22 +177,150 @@ FOR EACH ROW
 EXECUTE FUNCTION create_medical_record();
 
 
-CREATE OR REPLACE FUNCTION create_medication()
+
+
+--trigger to creat the patient_medication
+
+CREATE OR REPLACE FUNCTION create_patient_medication()
 RETURNS TRIGGER AS $$
-DECLARE
-    new_id INTEGER;
 BEGIN
-    SELECT COALESCE(MAX(medication_id), 0) + 1 INTO new_id FROM medication;
     
-	INSERT INTO medication (medication_id)
-    VALUES (new_id);
+	INSERT INTO patient_medication (patient_id)
+    VALUES (NEW.patient_id);
     
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE or replace TRIGGER create_medication
+CREATE or replace TRIGGER create_patient_medication
 AFTER INSERT ON patient
 FOR EACH ROW
-EXECUTE FUNCTION create_medication();
+EXECUTE FUNCTION create_patient_medication();
 
+
+
+
+--trigger to add the id of a medication to the patient medication when a doctor add a medication name
+
+CREATE OR REPLACE FUNCTION assign_patient_medication_id()
+RETURNS TRIGGER AS $$
+BEGIN
+    SELECT medication_id INTO NEW.patient_medication_id FROM medication WHERE medication_name = NEW.patient_medication_name;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER assign_patient_medication_id_trigger
+AFTER UPDATE ON patient_medication
+FOR EACH ROW
+EXECUTE FUNCTION assign_patient_medication_id();
+
+
+
+
+--trigger to supr the medical_record, appointement, patient_medication and patient_doctor
+
+
+CREATE OR REPLACE FUNCTION delete_patient()
+RETURNS TRIGGER AS $$
+DECLARE
+    nurs_id INTEGER;
+BEGIN
+	SELECT nurse_id INTO nurs_id FROM nurse WHERE nurse_id = OLD.nurse_id;
+
+    DELETE FROM medical_record WHERE patient_id = OLD.patient_id;
+    
+    DELETE FROM appointment WHERE patient_id = OLD.patient_id;
+    
+    DELETE FROM patient_medication WHERE patient_id = OLD.patient_id;
+    
+    DELETE FROM patient_doctor WHERE patient_id = OLD.patient_id;
+    
+    UPDATE nurse SET number_of_assigned_patients = number_of_assigned_patients - 1 WHERE nurse_id = nurs_id;
+	
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE or replace TRIGGER delete_patient_trigger
+BEFORE DELETE ON patient
+FOR EACH ROW
+EXECUTE FUNCTION delete_patient();
+
+
+
+
+--réassigne the nurse when deleted
+
+CREATE OR REPLACE FUNCTION reassign_nurse()
+RETURNS TRIGGER AS $$
+DECLARE
+    removed_nurse_id INTEGER;
+    new_nurse_id INTEGER;
+    patients_id INTEGER;
+BEGIN
+    removed_nurse_id := OLD.nurse_ID;
+
+    -- Sélectionner les ID des patients de l'infirmière supprimée
+    SELECT patient_ID INTO patients_id
+    FROM patient
+    WHERE nurse_ID = removed_nurse_id
+    LIMIT 1;
+
+    -- Boucle pour réassigner les patients à la nouvelle infirmière un par un
+    WHILE patients_id IS NOT NULL LOOP
+        -- Sélectionner la nouvelle infirmière avec le moins de patients
+        SELECT nurse_ID INTO new_nurse_id
+        FROM nurse
+        WHERE nurse_ID <> removed_nurse_id
+        ORDER BY number_of_assigned_patients ASC
+        LIMIT 1;
+
+        -- Mettre à jour le patient pour le réassigner à la nouvelle infirmière
+        UPDATE patient
+        SET nurse_ID = new_nurse_id
+        WHERE patient_ID = patients_id;
+
+        -- Mettre à jour le nombre de patients pris en charge par la nouvelle infirmière
+        UPDATE nurse
+        SET number_of_assigned_patients = number_of_assigned_patients + 1
+        WHERE nurse_ID = new_nurse_id;
+
+        -- Sélectionner le prochain patient de l'infirmière supprimée
+        SELECT patient_ID INTO patients_id
+        FROM patient
+        WHERE nurse_ID = removed_nurse_id
+        LIMIT 1;
+    END LOOP;
+
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE or replace TRIGGER reassign_nurse_trigger
+before DELETE ON nurse
+FOR EACH ROW
+EXECUTE FUNCTION reassign_nurse();
+
+
+
+
+--trigger to supr the appointement when a doctor is supr and also the table doctor_patient
+
+CREATE OR REPLACE FUNCTION delete_doctor_appointments()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Supprimer les rendez-vous liés au docteur
+    DELETE FROM appointment WHERE doctor_ID = OLD.doctor_ID;
+
+    -- Supprimer les liens patient-doctor pour le docteur supprimé
+    DELETE FROM patient_doctor WHERE doctor_ID = OLD.doctor_ID;
+
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER delete_doctor_appointments_trigger
+BEFORE DELETE ON doctor
+FOR EACH ROW
+EXECUTE FUNCTION delete_doctor_appointments();
