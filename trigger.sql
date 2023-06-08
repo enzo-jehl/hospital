@@ -1,14 +1,12 @@
 trigger :
 	-Id pour docteur, nurse, patient, medication (fait)
-	-assignement automatic d'une nurse a un nouveaux patient
-	-assignement d'un docteur puis création d'un appointement
-	-docteur assigner departement
-	-create new medical record
-	-création d'une table non remplie pour le patient_médication
-	-création du dossier médical du patient
+	-assignement automatic d'une nurse a un nouveaux patient (fait)
+	-docteur assigner departement(fait)
+	-create new medical record(fait)
+	-création d'une table non remplie pour le patient_médication (a faire)
 	-lors de la suppretion d'un patien suprime aussi le médical record, les appointement, le patient médication et le patient_doctor qui lui sont reliée
 	-lors de la suprésion d'une nurse/doc réassignement automatic d'une nouvelle nurse/doc
-	
+	-assignement d'un docteur puis création d'un appointement 
 	
 CREATE OR REPLACE FUNCTION assign_id_functionPa()
 RETURNS TRIGGER AS $$
@@ -97,20 +95,76 @@ EXECUTE FUNCTION assign_id_functionMed();
 CREATE OR REPLACE FUNCTION assign_nurse_to_patient()
 RETURNS TRIGGER AS $$
 DECLARE
-    nurse_id INT;
+    nurs_id INT;
 BEGIN
-    select min(nurse_id) from nurse where number_of_assigned_patients = (select min(number_of_assigned_patients) from nurse)
+    select min(nurse_id) into nurs_id from nurse where number_of_assigned_patients = (select min(number_of_assigned_patients) from nurse);
 
-    NEW.nurse_id := nurse_id;
+    NEW.nurse_id := nurs_id;
 
-    -- Mise à jour du nombre de patients de l'infirmière
-    UPDATE nurse SET number_of_assigned_patients = number_of_assigned_patients + 1 WHERE id = nurse_id;
+    UPDATE nurse SET number_of_assigned_patients = number_of_assigned_patients + 1 WHERE nurse_id = nurs_id;
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER assign_nurse_trigger
+CREATE or replace TRIGGER assign_nurse_trigger
 BEFORE INSERT ON patient
 FOR EACH ROW
 EXECUTE FUNCTION assign_nurse_to_patient();
+
+
+CREATE OR REPLACE FUNCTION assign_doctor_to_department()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.department_id IS NULL THEN
+        SELECT department_id INTO NEW.department_id FROM department WHERE department_name = NEW.speciality;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE or replace TRIGGER assign_doctor_trigger
+BEFORE INSERT ON doctor
+FOR EACH ROW
+EXECUTE FUNCTION assign_doctor_to_department();
+
+
+CREATE OR REPLACE FUNCTION create_medical_record()
+RETURNS TRIGGER AS $$
+DECLARE
+    new_id INTEGER;
+BEGIN
+    SELECT COALESCE(MAX(medical_record_id), 0) + 1 INTO new_id FROM medical_record;
+    
+	INSERT INTO medical_record (medical_record_id, patient_id, admission_date)
+    VALUES (new_id, NEW.patient_id, current_date);
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE or replace TRIGGER create_medical_record_trigger
+AFTER INSERT ON patient
+FOR EACH ROW
+EXECUTE FUNCTION create_medical_record();
+
+
+CREATE OR REPLACE FUNCTION create_medication()
+RETURNS TRIGGER AS $$
+DECLARE
+    new_id INTEGER;
+BEGIN
+    SELECT COALESCE(MAX(medication_id), 0) + 1 INTO new_id FROM medication;
+    
+	INSERT INTO medication (medication_id)
+    VALUES (new_id);
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE or replace TRIGGER create_medication
+AFTER INSERT ON patient
+FOR EACH ROW
+EXECUTE FUNCTION create_medication();
+
