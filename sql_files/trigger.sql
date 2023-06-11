@@ -192,7 +192,7 @@ EXECUTE FUNCTION create_medical_record();
 
 
 
---trigger to creat the patient_medication
+--trigger to create the patient_medication
 
 CREATE OR REPLACE FUNCTION create_patient_medication()
 RETURNS TRIGGER AS $$
@@ -268,7 +268,7 @@ EXECUTE FUNCTION delete_patient();
 
 
 
---réassigne the nurse when deleted
+--reassigne the nurse when deleted
 
 CREATE OR REPLACE FUNCTION reassign_nurse()
 RETURNS TRIGGER AS $$
@@ -279,32 +279,32 @@ DECLARE
 BEGIN
     removed_nurse_id := OLD.nurse_ID;
 
-    -- Sélectionner les ID des patients de l'infirmière supprimée
+    -- Select patients ID from the deleted nurse
     SELECT patient_ID INTO patients_id
     FROM patient
     WHERE nurse_ID = removed_nurse_id
     LIMIT 1;
 
-    -- Boucle pour réassigner les patients à la nouvelle infirmière un par un
+    -- loop to reassign patients to the new nurse one by one
     WHILE patients_id IS NOT NULL LOOP
-        -- Sélectionner la nouvelle infirmière avec le moins de patients
+        -- Select the new nurse with the least patients
         SELECT nurse_ID INTO new_nurse_id
         FROM nurse
         WHERE nurse_ID <> removed_nurse_id
         ORDER BY number_of_assigned_patients ASC
         LIMIT 1;
 
-        -- Mettre à jour le patient pour le réassigner à la nouvelle infirmière
+        -- Update the patient to reassigne the new nurse
         UPDATE patient
         SET nurse_ID = new_nurse_id
         WHERE patient_ID = patients_id;
 
-        -- Mettre à jour le nombre de patients pris en charge par la nouvelle infirmière
+        -- Update the number of patients of the new nurse
         UPDATE nurse
         SET number_of_assigned_patients = number_of_assigned_patients + 1
         WHERE nurse_ID = new_nurse_id;
 
-        -- Sélectionner le prochain patient de l'infirmière supprimée
+        -- Select the next patient of the deleted nurse 
         SELECT patient_ID INTO patients_id
         FROM patient
         WHERE nurse_ID = removed_nurse_id
@@ -328,10 +328,11 @@ EXECUTE FUNCTION reassign_nurse();
 CREATE OR REPLACE FUNCTION delete_doctor_appointments()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Supprimer les rendez-vous liés au docteur
+
+    -- delete the appointments linked to the doctor
     DELETE FROM appointment WHERE doctor_ID = OLD.doctor_ID;
 
-    -- Supprimer les liens patient-doctor pour le docteur supprimé
+    -- delete links patient-doctor for the deleted doctor
     DELETE FROM patient_doctor WHERE doctor_ID = OLD.doctor_ID;
 
     RETURN OLD;
