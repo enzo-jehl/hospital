@@ -52,9 +52,9 @@ update patient_medication set prescription_date = '2023-06-19', patient_medicati
 update patient_medication set prescription_date = '2023-06-20', patient_medication_name = 'Ibuprofen' where Patient_ID = 4;
 
 
-
-
-
+INSERT INTO Patient (Name, Gender, Date_of_Birth, Contact_Number, Address, contacted_department)
+VALUES
+  ('John Rambo', 'M', '1968-10-03', '9999999999', '666 Maple Street', 'Cardiology');
 
 
 
