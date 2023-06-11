@@ -222,8 +222,7 @@ DECLARE
 BEGIN
     SELECT medication_id INTO new_med_id FROM medication WHERE medication_name = NEW.patient_medication_name;
     UPDATE patient_medication
-        SET medication_id = new_med_id
-        WHERE patient_medication_name = NEW.patient_medication_name;
+        SET medication_id = new_med_id where patient_medication_name = NEW.patient_medication_name;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -231,6 +230,7 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE TRIGGER assign_patient_medication_id_trigger
 AFTER UPDATE ON patient_medication
 FOR EACH ROW
+When (OLD.patient_medication_name IS DISTINCT FROM NEW.patient_medication_name)
 EXECUTE FUNCTION assign_patient_medication_id();
 
 
