@@ -32,7 +32,6 @@ create table patient(
 	contacted_department varchar(40),
 	nurse_ID int,
 	foreign key (nurse_ID) references nurse(nurse_ID)
-	foreign key (nurse_ID) reference
 	);
 	
 create table doctor(
@@ -83,7 +82,7 @@ create table patient_medication(
 	patient_ID int,
 	medication_ID int,
 	prescription_date date,
-	medication_name varchar(40),
+	patient_medication_name varchar(40),
 	foreign key (patient_ID) references patient(patient_ID),
 	foreign key (medication_ID) references medication(medication_ID)
 	);

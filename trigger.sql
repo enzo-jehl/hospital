@@ -1,15 +1,3 @@
-trigger :
-	-Id pour docteur, nurse, patient, medication (fait)
-	-assignement automatic d'une nurse a un nouveaux patient (fait)
-	-docteur assigner departement(fait)
-	-create new medical record(fait)
-	-création d'une table non remplie pour le patient_médication (fait)
-	-création d'un trigger pour assigner l'id d'un médicament dans le médication id quand un nom est rentrée(fait)
-	-lors de la suppretion d'un patien suprime aussi le médical record, les appointement, le patient médication et le patient_doctor qui lui sont reliée va aussi baisser de 1 le ombre de patient de la nurse a l'aquelle le patient est assigner (fait)
-	-lors de la suprésion d'une nurse réassignement automatic d'une nouvelle nurse(fait)
-	-lors de la suprésion d'un docteur va suprimée ses appointement et ses lien avec les patient
-	
-	
 --trigger for the ID of patient
 
 CREATE OR REPLACE FUNCTION assign_id_functionPa()
@@ -27,7 +15,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER assign_id_trigger
+CREATE OR REPLACE TRIGGER assign_id_trigger
 BEFORE INSERT ON patient
 FOR EACH ROW
 EXECUTE FUNCTION assign_id_functionPa();
@@ -52,7 +40,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER assign_id_trigger
+CREATE OR REPLACE TRIGGER assign_id_trigger
 BEFORE INSERT ON doctor
 FOR EACH ROW
 EXECUTE FUNCTION assign_id_functionDoc();
@@ -77,7 +65,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER assign_id_trigger
+CREATE OR REPLACE TRIGGER assign_id_trigger
 BEFORE INSERT ON nurse
 FOR EACH ROW
 EXECUTE FUNCTION assign_id_functionNu();
@@ -102,10 +90,35 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER assign_id_trigger
+CREATE OR REPLACE TRIGGER assign_id_trigger
 BEFORE INSERT ON medication
 FOR EACH ROW
 EXECUTE FUNCTION assign_id_functionMed();
+
+
+
+
+--trigger for the ID of department
+
+CREATE OR REPLACE FUNCTION assign_id_functionDep()
+RETURNS TRIGGER AS $$
+DECLARE
+    last_id INT;
+BEGIN
+    SELECT MAX(department_id) INTO last_id FROM department;
+    IF last_id IS NULL THEN
+        NEW.department_id := 1;
+    ELSE
+        NEW.department_id := last_id + 1;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER assign_id_trigger
+BEFORE INSERT ON department
+FOR EACH ROW
+EXECUTE FUNCTION assign_id_functionDep();
 
 
 
@@ -204,13 +217,18 @@ EXECUTE FUNCTION create_patient_medication();
 
 CREATE OR REPLACE FUNCTION assign_patient_medication_id()
 RETURNS TRIGGER AS $$
+DECLARE
+    new_med_id INTEGER;
 BEGIN
-    SELECT medication_id INTO NEW.patient_medication_id FROM medication WHERE medication_name = NEW.patient_medication_name;
+    SELECT medication_id INTO new_med_id FROM medication WHERE medication_name = NEW.patient_medication_name;
+    UPDATE patient_medication
+        SET medication_id = new_med_id
+        WHERE patient_medication_name = NEW.patient_medication_name;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER assign_patient_medication_id_trigger
+CREATE OR REPLACE TRIGGER assign_patient_medication_id_trigger
 AFTER UPDATE ON patient_medication
 FOR EACH ROW
 EXECUTE FUNCTION assign_patient_medication_id();
@@ -320,7 +338,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER delete_doctor_appointments_trigger
+CREATE OR REPLACE TRIGGER delete_doctor_appointments_trigger
 BEFORE DELETE ON doctor
 FOR EACH ROW
 EXECUTE FUNCTION delete_doctor_appointments();
