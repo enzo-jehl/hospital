@@ -1,4 +1,4 @@
-
+-- display all patient ids from today appointments
 CREATE OR REPLACE FUNCTION todaysapps (today date)
 RETURNS int
 AS $$
@@ -13,7 +13,7 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql;
 
-
+-- change the appointment status with status
 CREATE OR REPLACE PROCEDURE changeappstatus (app_ID int, status varchar(40))
 LANGUAGE plpgsql
 AS $$
@@ -24,6 +24,7 @@ BEGIN
 END;
 $$;
     	
+-- display doctors info of spec
 CREATE OR REPLACE FUNCTION specialistlist(spec varchar(40))
 RETURNS SETOF doctor
 AS $$
@@ -32,7 +33,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
+-- display the medical record of a given patient id
 CREATE OR REPLACE function showmedicalrecord (id int)
 RETURNS SETOF medical_record
 AS $$
@@ -41,16 +42,23 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
-CREATE OR REPLACE function showpatientmedication (id int)
-RETURNS SETOF patient_medication
+-- show the name of the medication that takes the given patient id
+CREATE OR REPLACE FUNCTION show_patient_medication(id INT)
+RETURNS TABLE (
+    medication_name VARCHAR(40)
+)
 AS $$
 BEGIN
-   return query SELECT * FROM patient_medication WHERE patient_id = id;
+    RETURN QUERY
+    SELECT DISTINCT m.medication_name
+    FROM medication m
+    JOIN patient_medication pm ON m.medication_ID = pm.medication_ID
+    JOIN medical_record mr ON pm.patient_ID = mr.patient_ID
+    WHERE mr.patient_ID = id;
 END;
 $$ LANGUAGE plpgsql;
 
-
+-- update the patient_medication table
 CREATE OR REPLACE PROCEDURE changepatientmedication (npatient_ID int, nmedication_id int)
 AS $$
 BEGIN
@@ -60,7 +68,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
+--display all patients assigned to the given nurse
 CREATE OR REPLACE function shownursepatients (id int)
 RETURNS SETOF patient
 AS $$
@@ -69,7 +77,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
+-- show the number of patient of the given nurse
 CREATE OR REPLACE FUNCTION getnumberofpatient (id int)
 RETURNS int
 AS $$
@@ -81,7 +89,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
+-- update the given nurse infos
 CREATE OR REPLACE PROCEDURE changeinfosnurse (id int, nemail varchar(40), ncontact_number varchar(40))
 AS $$
 BEGIN
@@ -99,30 +107,39 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
-CREATE OR REPLACE FUNCTION showdocspatients(id_doctor INT)
-RETURNS SETOF patient
+-- show the name of patients who have an appointment with the given doctor
+CREATE OR REPLACE FUNCTION showdocspatients(id INT)
+RETURNS TABLE (
+    patient_name VARCHAR(40)
+)
 AS $$
 BEGIN
-   RETURN QUERY SELECT * FROM patient 
-   WHERE patient_id 
-   IN (SELECT patient_id FROM patient_doctor WHERE doctor_id = id_doctor);
+    RETURN QUERY
+    SELECT p.name
+    FROM patient p
+    INNER JOIN appointment a ON p.patient_ID = a.patient_ID
+    WHERE a.doctor_ID = id;
 END;
 $$ LANGUAGE plpgsql;
 
-
-CREATE OR REPLACE FUNCTION showpatientsdoc(id_patient INT)
-RETURNS SETOF doctor
+-- show all appointments by the give status
+CREATE OR REPLACE FUNCTION get_appointments_by_status(status VARCHAR(40))
+RETURNS TABLE (
+    patient_name VARCHAR(40),
+    doctor_name VARCHAR(40)
+)
 AS $$
 BEGIN
-   RETURN QUERY SELECT * FROM doctor 
-   WHERE doctor_id 
-   IN (SELECT doctor_id FROM patient_doctor WHERE patient_id = id_patient);
+    RETURN QUERY
+    SELECT p.name AS patient_name, d.name AS doctor_name
+    FROM appointment a
+    INNER JOIN patient p ON a.patient_ID = p.patient_ID
+    INNER JOIN doctor d ON a.doctor_ID = d.doctor_ID
+    WHERE a.appointment_status = status;
 END;
 $$ LANGUAGE plpgsql;
 
-
-
+-- procedure to update the given doctor infos
 CREATE OR REPLACE PROCEDURE changeinfosdoctor (id int, nemail varchar(40), ncontact_number varchar(40))
 AS $$
 BEGIN
@@ -139,3 +156,24 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE plpgsql;
+
+
+
+-- test cases
+select todaysapp('2023-06-10');
+call changeappstatus(1, 'in progress');
+select specialistlist('Cardiology');
+select showmedicalrecord(2);
+select * from show_patient_medication(2);
+call changepatientmedication(1,2);
+select shownursepatients(1);
+select getnumberofpatient(1);
+call changeinfosnurse(4, 'paul@gmail.com', '1111111111');
+select showdocspatients(1);
+select get_appointments_by_status('Scheduled');
+call changeinfosdoctor(1, 'dark911destructor@gmail.com', '6666666666');
+
+
+
+
+
