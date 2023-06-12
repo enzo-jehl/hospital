@@ -1,4 +1,5 @@
-CREATE OR REPLACE FUNCTION todaysapps (today date)//ok
+
+CREATE OR REPLACE FUNCTION todaysapps (today date)
 RETURNS int
 AS $$
 DECLARE
@@ -13,8 +14,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-
-CREATE OR REPLACE PROCEDURE changeappstatus (app_ID int, status varchar(40))//ok
+CREATE OR REPLACE PROCEDURE changeappstatus (app_ID int, status varchar(40))
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -24,7 +24,7 @@ BEGIN
 END;
 $$;
     	
-CREATE OR REPLACE FUNCTION specialistlist(spec varchar(40))//ok
+CREATE OR REPLACE FUNCTION specialistlist(spec varchar(40))
 RETURNS SETOF doctor
 AS $$
 BEGIN
@@ -33,7 +33,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE function showmedicalrecord (id int)//ok
+CREATE OR REPLACE function showmedicalrecord (id int)
 RETURNS SETOF medical_record
 AS $$
 BEGIN
@@ -51,7 +51,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE PROCEDURE changepatientmedication (npatient_ID int, nmedication_id int)//ok
+CREATE OR REPLACE PROCEDURE changepatientmedication (npatient_ID int, nmedication_id int)
 AS $$
 BEGIN
     UPDATE patient_medication
@@ -61,7 +61,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE function shownursepatients (id int)//ok
+CREATE OR REPLACE function shownursepatients (id int)
 RETURNS SETOF patient
 AS $$
 BEGIN
@@ -70,7 +70,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE FUNCTION getnumberofpatient (id int)//ok
+CREATE OR REPLACE FUNCTION getnumberofpatient (id int)
 RETURNS int
 AS $$
 DECLARE
@@ -82,7 +82,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE PROCEDURE changeinfosnurse (id int, nemail varchar(40), ncontact_number varchar(40))//ok
+CREATE OR REPLACE PROCEDURE changeinfosnurse (id int, nemail varchar(40), ncontact_number varchar(40))
 AS $$
 BEGIN
     IF nemail IS NOT NULL THEN
@@ -100,7 +100,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE FUNCTION showdocspatients(id_doctor INT) //ok
+CREATE OR REPLACE FUNCTION showdocspatients(id_doctor INT)
 RETURNS SETOF patient
 AS $$
 BEGIN
@@ -112,7 +112,7 @@ $$ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION showpatientsdoc(id_patient INT)
-RETURNS SETOF doctor//ok
+RETURNS SETOF doctor
 AS $$
 BEGIN
    RETURN QUERY SELECT * FROM doctor 
@@ -123,7 +123,7 @@ $$ LANGUAGE plpgsql;
 
 
 
-CREATE OR REPLACE PROCEDURE changeinfosdoctor (id int, nemail varchar(40), ncontact_number varchar(40))//ok
+CREATE OR REPLACE PROCEDURE changeinfosdoctor (id int, nemail varchar(40), ncontact_number varchar(40))
 AS $$
 BEGIN
     IF nemail IS NOT NULL THEN
