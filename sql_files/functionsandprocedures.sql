@@ -160,7 +160,7 @@ $$ LANGUAGE plpgsql;
 
 
 -- test cases
-select todaysapp('2023-06-10');
+select todaysapps('2023-06-10');
 call changeappstatus(1, 'in progress');
 select specialistlist('Cardiology');
 select showmedicalrecord(2);
